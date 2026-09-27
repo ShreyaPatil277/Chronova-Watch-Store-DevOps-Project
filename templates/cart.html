@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Your Cart - Chronova</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #0d0d0d; color: #f5f5f5; margin: 0; padding: 0; }
+  header { background: #1a1a1a; padding: 25px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #d4af37; }
+  header h1 { color: #d4af37; margin: 0; font-size: 28px; letter-spacing: 2px; }
+  .back-link { color: #f5f5f5; text-decoration: none; background: #262626; padding: 10px 18px; border-radius: 6px; border: 1px solid #d4af37; }
+  .back-link:hover { background: #d4af37; color: #000; }
+  .cart-container { max-width: 700px; margin: 40px auto; padding: 0 20px; }
+  .cart-item { background: #1a1a1a; border: 1px solid #333; border-radius: 8px; display: flex; align-items: center; gap: 20px; padding: 15px; margin-bottom: 15px; }
+  .cart-item img { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; }
+  .cart-item .info { flex: 1; }
+  .cart-item .info .brand { color: #d4af37; font-size: 12px; text-transform: uppercase; }
+  .cart-item .info h4 { margin: 4px 0; }
+  .qty-controls { display: flex; align-items: center; gap: 10px; }
+  .qty-controls button { background: #333; color: #fff; border: none; width: 28px; height: 28px; border-radius: 4px; cursor: pointer; }
+  .remove-btn { background: transparent; border: none; color: #d9534f; cursor: pointer; font-size: 13px; margin-left: 15px; }
+  .total-box { background: #1a1a1a; border: 1px solid #d4af37; border-radius: 8px; padding: 20px; margin-top: 20px; display: flex; justify-content: space-between; font-size: 20px; }
+  .checkout-btn { display: block; width: 100%; background: #d4af37; border: none; padding: 14px; margin-top: 20px; border-radius: 6px; font-weight: bold; font-size: 16px; cursor: pointer; }
+  .empty { text-align: center; color: #888; padding: 60px 0; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>CHRONOVA</h1>
+    <a class="back-link" href="/">← Continue Shopping</a>
+  </header>
+
+  <div class="cart-container" id="cart-container"></div>
+
+<script>
+function getCart() {
+  return JSON.parse(localStorage.getItem("chronova_cart") || "[]");
+}
+function saveCart(cart) {
+  localStorage.setItem("chronova_cart", JSON.stringify(cart));
+}
+function changeQty(id, delta) {
+  let cart = getCart();
+  const item = cart.find(i => i.id === id);
+  if (!item) return;
+  item.qty += delta;
+  if (item.qty <= 0) cart = cart.filter(i => i.id !== id);
+  saveCart(cart);
+  render();
+}
+function removeItem(id) {
+  let cart = getCart().filter(i => i.id !== id);
+  saveCart(cart);
+  render();
+}
+function render() {
+  const cart = getCart();
+  const container = document.getElementById("cart-container");
+  if (cart.length === 0) {
+    container.innerHTML = '<div class="empty">Your cart is empty.</div>';
+    return;
+  }
+  let html = "";
+  let total = 0;
+  cart.forEach(item => {
+    const subtotal = item.price * item.qty;
+    total += subtotal;
+    html += `
+      <div class="cart-item">
+        <img src="${item.image}" alt="${item.name}">
+        <div class="info">
+          <div class="brand">${item.brand}</div>
+          <h4>${item.name}</h4>
+          <div>₹${item.price.toLocaleString()}</div>
+        </div>
+        <div class="qty-controls">
+          <button onclick="changeQty(${item.id}, -1)">-</button>
+          <span>${item.qty}</span>
+          <button onclick="changeQty(${item.id}, 1)">+</button>
+        </div>
+        <button class="remove-btn" onclick="removeItem(${item.id})">Remove</button>
+      </div>`;
+  });
+  html += `<div class="total-box"><span>Total</span><span>₹${total.toLocaleString()}</span></div>`;
+  html += `<button class="checkout-btn" onclick="alert('Checkout is a demo action for this project.')">Proceed to Checkout</button>`;
+  container.innerHTML = html;
+}
+render();
+</script>
+</body>
+</html>
